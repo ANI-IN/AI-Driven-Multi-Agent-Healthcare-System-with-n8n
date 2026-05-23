@@ -1,0 +1,62 @@
+# ========================
+# n8n Workflow Project
+# ========================
+
+# Environment and secrets
+.env
+.env.local
+.env.production
+.env.*.local
+*.pem
+*.key
+credentials.json
+credentials/
+
+# n8n local database
+database.sqlite
+database.sqlite-journal
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Node modules (if any custom n8n extensions)
+node_modules/
+
+# Build artifacts
+dist/
+build/
+*.tgz
+
+# Improvement reports (local only)
+improvements/
+
+# Claude Code local settings
+.claude/
+
+# Temporary files
+tmp/
+temp/
+*.tmp

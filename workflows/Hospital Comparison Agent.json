@@ -1,0 +1,215 @@
+{
+  "name": "Hospital Comparison Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        80
+      ],
+      "id": "f373b75c-79cb-4ba1-8e82-811b3b315339",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "# Role:\nYou are a hospital and emergency service assistant. Your job is to answer questions about hospital details and ambulance availability.\n\n\n# Tools:\nYou are connected to tools:\n\n1. **Hospital General Info** : Is used to search for hospital information.These are the table fields separated by comma:\nProvider ID,Hospital Name,Address,City,State,ZIP Code,County Name,Phone Number,Hospital Type,Hospital Ownership,Emergency Services,Meets criteria for meaningful use of EHRs,Hospital overall rating,Hospital overall rating footnote,Mortality national comparison,Mortality national comparison footnote,Safety of care national comparison,Safety of care national comparison footnote,Readmission national comparison,Readmission national comparison footnote,Patient experience national comparison,Patient experience national comparison footnote,Effectiveness of care national comparison,Effectiveness of care national comparison footnote,Timeliness of care national comparison,Timeliness of care national comparison footnote,Efficient use of medical imaging national comparison,Efficient use of medical imaging national comparison footnote,Location\n\n\n# Guidelines:\n- Use tools to search for and answer all questions.\n- Each paragraph should begin with a relevant heading (e.g., Hospital Info, Emergency Access).\n- Use concise, readable English with proper formatting.\n- For AirTable Tools, generate a formula that is compatible with the Airtable API. Remember that to build formulas to search records in Airtable:\n- Field names must be wrapped in curly braces {Field Name}\n- String literals must be in double quotes\n- For case-insensitive searching, wrap fields and search terms in LOWER() or UPPER()\n- Boolean operations use AND(), OR(), NOT().\nSample:\n1) LOWER({Field Name}) = LOWER(\"search term\")\n2) OR(\n    LOWER({Field1}) = LOWER(\"term1\"),\n    LOWER({Field2}) = LOWER(\"term2\")\n)\n\n\n# Workflow:\n1. Parse the user's request: location, hospital type, quality criteria\n2. Query the `Hospital General Info` and/or `Hospital Emergency Data` as needed.\n4. Return your findings in clean paragraph form. Example\n\n**Hospital Info**  \nMarshall Medical Center South is located in Boaz, AL 35957. It is an acute care hospital. The contact number is (256) 555-1234.\n\n**Care Quality**  \nThe hospital has above-average timeliness of care and same-as-average patient experience.\n\n\n# Constraints:\n- Only use tools for data.\n- Never generate summaries or content on your own.\n\n# Ask When Needed:\n- Ask for clarification on quality measures if vague (e.g., “What do you mean by good?”).\n\n# Output Style:\n- Use paragraph structure; bullet points are optional.\n- Avoid raw JSON or tables unless asked.\n\n\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        528,
+        80
+      ],
+      "id": "ee3a2905-3bdd-440f-8fed-6ffa2dce49c1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        256,
+        400
+      ],
+      "id": "b65cfbfc-e1e4-43c2-bd0f-5763007769d4",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "N19zlicishMyKerz",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Search in Hospitals\n",
+        "height": 572,
+        "width": 1120
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        144,
+        0
+      ],
+      "id": "10aed7d3-a4a3-46ea-b781-340476d6b93a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "https://airtable.com/appa80eAqjRflAgxs/tblTwpHljWFNwEvie/viwEBakiE7IEQPyJx",
+          "mode": "url"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblTwpHljWFNwEvie",
+          "mode": "list",
+          "cachedResultName": "Hospital_General_Information",
+          "cachedResultUrl": "https://airtable.com/appa80eAqjRflAgxs/tblTwpHljWFNwEvie"
+        },
+        "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Filter_By_Formula', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        832,
+        400
+      ],
+      "id": "aa6ed803-a5e3-47ad-85c3-2c885a989721",
+      "name": "Hospital General Info",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "0hd2roMYuZ5EIPJA",
+          "name": "Samwel Emmanuel Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "worksheet",
+        "operation": "readRows",
+        "workbook": {
+          "__rl": true,
+          "value": "01GIIHKKLY7AYNKICZEZHLMTCWOL353ZQM",
+          "mode": "list",
+          "cachedResultName": "hospitals_emergency_data",
+          "cachedResultUrl": "https://interviewkickstarts-my.sharepoint.com/personal/aiexplorer_54_teamupwardandonward_com/_layouts/15/Doc.aspx?sourcedoc=%7BD530F878-5920-4E26-B64C-5672F7DDE60C%7D&file=hospitals_emergency_data.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "hospitals_emergency_data_Aug3",
+          "cachedResultUrl": "https://interviewkickstarts-my.sharepoint.com/personal/aiexplorer_54_teamupwardandonward_com/_layouts/15/Doc.aspx?sourcedoc=%7BD530F878-5920-4E26-B64C-5672F7DDE60C%7D&file=hospitals_emergency_data.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=hospitals_emergency_data_Aug3!A1"
+        },
+        "useRange": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Select_a_Range', ``, 'boolean') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcelTool",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        400
+      ],
+      "id": "91017241-f75d-4d16-a491-ddb84c73b184",
+      "name": "Hospital Emergency Data",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "gJrG4ClcK4knV0kw",
+          "name": "Microsoft Excel Sams Key"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "List  hospitals in Alabama"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Hospital General Info": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hospital Emergency Data": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d53356b9-e7e7-4dbf-bc4a-25ebc6534177",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f8915628d001c9f12c477501d438b0ef663b51074cad39b3fe2c37a0f1ebd929"
+  },
+  "id": "AkjjTUveKRjQrjv3",
+  "tags": []
+}

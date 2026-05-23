@@ -1,0 +1,247 @@
+{
+  "name": "Doctor Booking Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=# Role:\nYou are a healthcare appointment agent. You help users find and confirm doctor appointments using connected tools.\n\n# Behavior\n\n- Use `doctors_slots` to query available times. Each slot has doctor_id, datetime, is_available.\n- Use `doctor_info` to look up doctor details and return id, name, specialization, contact.\n- Use the id field from doctor_info to query from the doctors_slots tool.\n- Use the email tool (aka `email_user`) to send the confirmation email.\n\n\n# General Workflow:\n1. Extract doctor name or specialty from user input.\n2. Look up matching doctors in `doctor_info` and return all matching fields.\n3. Query `doctors_slots` for future slots (`is_available = 1`) for those doctors\n4. Return the **first available slot** for each matching doctor.\n5. Ask for user confirmation before proceeding.\n6. Upon confirmation, ask for their email address.\n7. Send an email via the `email_user` tool with the appointment details.\n\n# Guidelines:\n- Based on the user input, you may start from the begining or middle of workflow.\n- If the user doesn’t specify a doctor or specialty, ask for one.\n- If the user input has all the appointment information (the doctor's name and date and time of slot details), proceed to get the email to send confirmation.\n- If the user input has all the appointment information (the doctor's name and date, time of slot details) AND the email , send a confirmation email.\n- Do NOT re-fetch doctor or slot data unless no context is provided.\n\n\n# Format:\nWhen suggesting a slot, present it in this markdown format:\n\n> **Doctor:** <doctor_name>  \n> **Specialization:** <specialty>  \n> **Next Available:** <datetime>  \n> **Contact:** <contact_number>\n \n\nIf the email is provided, call the tool like this:\n\n```json\n{\n  \"tool\": \"email_user\",\n  \"input\": {\n    \"to\": \"<user_email>\",\n    \"subject\": \"Appointment Confirmation\",\n    \"body\": \"Your appointment with Dr. <doctor_name> (Specialty: <specialty>) is confirmed for <datetime>. Contact: <contact>.\"\n  }\n}\n\n# Additional Guidelines:\nAlways prioritize the earliest available."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        368,
+        80
+      ],
+      "id": "ee000e90-6186-4aa8-a315-0922988dcad0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        368
+      ],
+      "id": "b5a321e3-422c-4547-bd30-21b772a44a09",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "N19zlicishMyKerz",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Booking Agent\n",
+        "height": 540,
+        "width": 820
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a80fad4d-08c8-43b8-868c-f3a337c1a703",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        80
+      ],
+      "id": "e362a8cf-032f-49ca-ae14-02ef77ea0de4",
+      "name": "start_wf"
+    },
+    {
+      "parameters": {
+        "resource": "worksheet",
+        "operation": "readRows",
+        "workbook": {
+          "__rl": true,
+          "value": "01GIIHKKNWQH4RWLKYEVBKQJZ3AH75QMZU",
+          "mode": "list",
+          "cachedResultName": "doctors_info_data",
+          "cachedResultUrl": "https://interviewkickstarts-my.sharepoint.com/personal/aiexplorer_54_teamupwardandonward_com/_layouts/15/Doc.aspx?sourcedoc=%7B1BF981B6-582D-4225-A827-3B01FFD83334%7D&file=doctors_info_data.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "doctors_info_data_Aug3",
+          "cachedResultUrl": "https://interviewkickstarts-my.sharepoint.com/personal/aiexplorer_54_teamupwardandonward_com/_layouts/15/Doc.aspx?sourcedoc=%7B1BF981B6-582D-4225-A827-3B01FFD83334%7D&file=doctors_info_data.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=doctors_info_data_Aug3!A1"
+        },
+        "useRange": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Select_a_Range', ``, 'boolean') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcelTool",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        384
+      ],
+      "id": "bd2a16ed-55de-4d3f-81f2-7a4d04d74b75",
+      "name": "doctors_info",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "gJrG4ClcK4knV0kw",
+          "name": "Microsoft Excel Sams Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "worksheet",
+        "operation": "readRows",
+        "workbook": {
+          "__rl": true,
+          "value": "01GIIHKKIB7K6O7X2LUVGIX7SFWXP5Z7UI",
+          "mode": "list",
+          "cachedResultName": "doctors_slots_data",
+          "cachedResultUrl": "https://interviewkickstarts-my.sharepoint.com/personal/aiexplorer_54_teamupwardandonward_com/_layouts/15/Doc.aspx?sourcedoc=%7BEFBCFA01-4BDF-4CA5-8BFE-45B5DFDCFE88%7D&file=doctors_slots_data.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "doctors_slots_data_Aug3",
+          "cachedResultUrl": "https://interviewkickstarts-my.sharepoint.com/personal/aiexplorer_54_teamupwardandonward_com/_layouts/15/Doc.aspx?sourcedoc=%7BEFBCFA01-4BDF-4CA5-8BFE-45B5DFDCFE88%7D&file=doctors_slots_data.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&activeCell=doctors_slots_data_Aug3!A1"
+        },
+        "useRange": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Select_a_Range', ``, 'boolean') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcelTool",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        400
+      ],
+      "id": "edcbd554-8174-40a4-bb6b-025d50081893",
+      "name": "doctors_slots",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "gJrG4ClcK4knV0kw",
+          "name": "Microsoft Excel Sams Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "bodyContent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        704,
+        384
+      ],
+      "id": "dc0fe577-6d72-4d1a-bd3b-2cba12fd2f91",
+      "name": "email_user",
+      "webhookId": "5e8f5898-e42c-4d3d-8348-a363229d88ec",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "FdlqvD2q232N5luL",
+          "name": "Sams Outlook Key"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "start_wf": [
+      {
+        "json": {
+          "query": "Book an appointment with Dr Linda Lee and send confirmation email to samakubi@gmail.com"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "start_wf": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "doctors_info": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "doctors_slots": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "email_user": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "162540bc-a289-40c5-9fb3-386b05d013c8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f8915628d001c9f12c477501d438b0ef663b51074cad39b3fe2c37a0f1ebd929"
+  },
+  "id": "3gQ7UlDVScIuMJvg",
+  "tags": []
+}
